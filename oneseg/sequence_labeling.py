@@ -16,11 +16,11 @@ class Decoder :
     def __call__(self, sentence, weights):
         emissions,transitions = self.put_value(sentence, weights)
 
-        alphas=[[[e,None] for e in emissions[0]]]
+        alphas=[[[e,None] for e in emissions[0]]] # [分数, 上衣状态]
         for i in range(len(emissions)-1) :
-            alphas.append([max([alphas[i][j][0]+transitions[j][k]+emissions[i+1][k],j]
-                                        for j in range(self.tag_size))
-                                        for k in range(self.tag_size)])
+            alphas.append([max([alphas[i][j][0]+transitions[j][k]+emissions[i+1][k], j]
+                                        for j in range(self.tag_size)) # 枚举前一状态
+                                        for k in range(self.tag_size)]) # 枚举后一状态
         # 根据alphas中的“指针”得到最优序列
         alpha=max([alphas[-1][j],j] for j in range(self.tag_size))
         i=len(emissions)
@@ -30,6 +30,29 @@ class Decoder :
             i-=1
             alpha=alphas[i][alpha[1]]
         return list(reversed(tags))
+
+    def cal_margins(self,sentence, weights):
+        emissions,transitions = self.put_value(sentence, weights)
+
+        alphas=[[[e,None] for e in emissions[0]]] # [分数, 上衣状态]
+        for i in range(len(emissions)-1) :
+            alphas.append([max([alphas[i][j][0]+transitions[j][k]+emissions[i+1][k], j]
+                                        for j in range(self.tag_size)) # 枚举前一状态
+                                        for k in range(self.tag_size)]) # 枚举后一状态
+
+        max_score = max([alphas[-1][j],j] for j in range(self.tag_size))[0][0]
+
+        betas = [[[e, None] for e in emissions[-1]]]
+        for i in range(len(emissions)-2,-1,-1):
+            betas.append([max([betas[-1][j][0]+transitions[k][j]+emissions[i][k], j]
+                                        for j in range(self.tag_size)) # 枚举右边状态
+                                        for k in range(self.tag_size)]) # 枚举左边状态
+        betas = list(reversed(betas))
+        margins = [ 
+                [max_score - alphas[i][j][0] - betas[i][j][0] + emissions[i][j] for j in range(self.tag_size)] 
+            for i in range(len(betas))]
+        return margins
+
 
 '''根据模板生成特征'''
 class Feature_Generator :

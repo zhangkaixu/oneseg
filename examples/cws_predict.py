@@ -15,3 +15,8 @@ if __name__ == '__main__':
     for line in sys.stdin :
         segged = segger.predict([line.strip()])
         print(*segged[0])
+
+        # margin用来计算一个结果的置信度，定义是最高分与次高分分数差
+        margins = segger.predict_margin([line.strip()])
+        margin = (min(list(sorted(m))[1] for m in margins[0]))
+        print(margin)

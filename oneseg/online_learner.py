@@ -50,11 +50,3 @@ class Learner :
         for k, v in weights.items():
             averaged[k] = v - self.acc[k] / self.step
         return averaged
-
-
-    def predict(self, test_x):
-        result_y = []
-        for x in test_x :
-            y = self.decoder(x, self.weights)
-            result_y.append(y)
-        return result_y

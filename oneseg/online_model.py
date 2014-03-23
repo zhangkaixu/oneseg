@@ -39,3 +39,10 @@ class Online :
             y = self.decoder(x, self.weights)
             result_y.append(y)
         return result_y
+
+    def predict_margin(self, test_x):
+        results = []
+        for x in test_x :
+            margins = self.decoder.cal_margins(x, self.weights)
+            results.append(margins)
+        return results
