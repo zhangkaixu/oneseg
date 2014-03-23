@@ -12,16 +12,20 @@ if __name__ == '__main__':
     test_file = 'ctb5.test.seg'
 
     # load copora
-    train_x, train_y = load_seg_file(dev_file)
-    dev_x, dev_y = load_seg_file(test_file)
+    train_x, train_y = load_seg_file(train_file)
+    dev_x, dev_y = load_seg_file(dev_file)
+    test_x, test_y = load_seg_file(test_file)
 
     # init the model
-    segger = Base_Segger()
+    bigrams = count_bigrams(train_x, max_size = 100000)
+    print('bigram size',len(bigrams))
+    segger = Base_Segger(bigrams = bigrams)
+
 
     # train the model
     segger.fit(train_x, train_y, 
-            dev_x = dev_x, dev_y = dev_y,
-            iterations = 5)
+            dev_x = test_x, dev_y = test_y,
+            iterations = 10)
 
     # save it and reload it
     gzip.open('model.gz','w').write(pickle.dumps(segger))
@@ -29,6 +33,6 @@ if __name__ == '__main__':
 
     # use the model and evaluate outside
     evaluator = CWS_Evaluator()
-    output = segger.predict(dev_x)
-    evaluator.eval_all(dev_y,output)
+    output = segger.predict(test_x)
+    evaluator.eval_all(test_y,output)
     evaluator.report()

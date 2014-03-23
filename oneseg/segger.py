@@ -52,7 +52,7 @@ def count_bigrams(train_x, max_size = 10000):
     counter = Counter()
     min_freq = 1
     for x in (train_x) :
-        line = '##'+''.join(x)+'#'
+        line = '#'+''.join(x)+'#'
         for i in range(len(line)-1) :
             b = line[i:i+2]
             if b not in counter :

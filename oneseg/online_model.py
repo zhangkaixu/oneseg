@@ -1,3 +1,4 @@
+import sys
 class Online :
     def __init__(self, decoder, weights = {}, learner = None, Eval = None):
         self.decoder = decoder
@@ -11,7 +12,11 @@ class Online :
         self.learner.reset()
         for it in range(iterations) :
             if self.Eval : evaluator = self.Eval()
+            c = 0
             for x, y in zip(train_x, train_y) :
+                c += 1
+                if c % 100 == 0 :
+                    print(c, end='\r', file = sys.stderr)
                 z = self.decoder(x, self.weights)
                 self.learner(x, y, z, self.weights)
                 if self.Eval : evaluator(y, z)
