@@ -1,6 +1,6 @@
 import numpy as np
-"""解码算法"""
 class Decoder :
+    """解码算法"""
     def __init__(self, feature_generator, tag_size = 4):
         self.feature_generator = feature_generator
         self.tag_size = tag_size
@@ -16,7 +16,7 @@ class Decoder :
     def __call__(self, sentence, weights):
         emissions,transitions = self.put_value(sentence, weights)
 
-        alphas=[[[e,None] for e in emissions[0]]] # [分数, 上衣状态]
+        alphas=[[[e,None] for e in emissions[0]]] # [分数, 上一状态]
         for i in range(len(emissions)-1) :
             alphas.append([max([alphas[i][j][0]+transitions[j][k]+emissions[i+1][k], j]
                                         for j in range(self.tag_size)) # 枚举前一状态
@@ -54,10 +54,10 @@ class Decoder :
         return margins
 
 
-'''根据模板生成特征'''
 class Feature_Generator :
+    '''根据模板生成特征'''
     def __init__(self, bigrams = None):
-        self.bigrams = bigrams
+        self.bigrams = bigrams # 可用bigrams来限定能够产生的bigram
     def __call__(self,sentence):
         ext = '##' + sentence + '##'
         bigrams = [ext[i:i+2] for i in range(len(ext)-1)]
