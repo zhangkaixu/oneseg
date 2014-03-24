@@ -7,6 +7,11 @@ from oneseg.online_model import Online
 from oneseg.online_learner import Learner
 from oneseg.sequence_labeling import Decoder, Feature_Generator
 
+TAG_B = 3
+TAG_M = 2
+TAG_E = 1
+TAG_S = 0
+
 def load_seg_file(filename):
     """
     """
@@ -17,24 +22,6 @@ def load_seg_file(filename):
         ys.append(y)
         xs.append(''.join(y))
     return xs, ys
-
-def count_bigrams(train_x, max_size = 10000):
-    """
-    数bigram
-    """
-    counter = Counter()
-    min_freq = 1
-    for x in (train_x) :
-        line = '#'+''.join(x)+'#'
-        for i in range(len(line)-1) :
-            b = line[i:i+2]
-            if b not in counter :
-                while max_size and len(counter) > max_size :
-                    counter = Counter({k:v for k,v in counter.items() if v > min_freq})
-                    min_freq += 1
-            counter.update({b:1})
-    counter = Counter({k:v for k,v in counter.items() if v >= min_freq})
-    return counter
 
 """评价"""
 class CWS_Evaluator : # 评价
@@ -63,6 +50,22 @@ class CWS_Evaluator : # 评价
         for x, y in zip(test_x, test_y):
             self(x,y)
 
+'''输出高频bigram'''
+def count_bigrams(train_x, max_size = 10000):
+    counter = Counter()
+    min_freq = 1
+    for x in (train_x) :
+        line = '##'+''.join(x)+'#'
+        for i in range(len(line)-1) :
+            b = line[i:i+2]
+            if b not in counter :
+                while max_size and len(counter) > max_size :
+                    counter = Counter({k:v for k,v in counter.items() if v > min_freq})
+                    min_freq += 1
+            counter.update({b:1})
+    counter = Counter({k:v for k,v in counter.items() if v >= min_freq})
+    return counter
+
 class Tag_Evaluator(CWS_Evaluator) : # 评价
     def __call__(self,std,rst): # 根据答案std和结果rst进行统计
         std = Base_Segger.decode(['0'*len(std)],[std])[0]
@@ -76,8 +79,8 @@ class Base_Segger(Online) :
         for words in words_list :
             y=[]
             for word in words :
-                if len(word)==1 : y.append(3)
-                else : y.extend([0]+[1]*(len(word)-2)+[2])
+                if len(word)==1 : y.append(TAG_S)
+                else : y.extend([TAG_B]+[TAG_M]*(len(word)-2)+[TAG_E])
             ys.append(y)
         return ys
 
@@ -89,7 +92,7 @@ class Base_Segger(Online) :
             words=[]
             for i in range(len(x)) :
                 cache+=x[i]
-                if y[i]==2 or y[i]==3 :
+                if y[i]==TAG_E or y[i]==TAG_S :
                     words.append(cache)
                     cache=''
             if cache : words.append(cache)
@@ -97,7 +100,7 @@ class Base_Segger(Online) :
         return words_list
 
     def __init__(self, bigrams = None):
-        tag_size = 4 # it is for cws
+        tag_size = 4 # for cws
         feature_generator = Feature_Generator(bigrams = bigrams)
         decoder = Decoder(feature_generator, tag_size = tag_size)
         learner = Learner(feature_generator, tag_size = tag_size)
