@@ -9,7 +9,13 @@ class Decoder :
         values = [np.zeros(self.tag_size) for i in range(len(sentence))]
         features = self.feature_generator(sentence)
         for i in range(len(values)) :
-            values[i] += sum(weights.get(key,0) for key in features[i])
+            values[i] += sum(weights.get(key,0) for key in features[i] if type(key) is not list)
+            values[i] += sum(
+                    np.dot(weights[key[0]], key[1])
+                    for key in features[i]
+                    if type(key) is list and key[1] is not None and key[0] in weights
+                    )
+
         values = [x for x in values]
         return values, weights.get('trans', np.zeros((self.tag_size, self.tag_size)))
 
@@ -33,7 +39,7 @@ class Decoder :
         a2 = [emissions[0]]
         p2 = [emissions[0]]
         for i in range(len(emissions)-1) :
-            x = transitions + a2[-1][np.newaxis].T + emissions[i+1]
+            x = transitions + a2[-1][:,np.newaxis] + emissions[i+1]
             points = x.argmax(axis = 0)
             m = x[(points,range(self.tag_size))] # "or"; m = x.max(axis = 0)
             a2.append(m)
@@ -93,15 +99,28 @@ class Decoder :
 
 class Feature_Generator :
     '''根据模板生成特征'''
-    def __init__(self, bigrams = None):
+    def __init__(self, bigrams = None, bigram_vectors = None):
         self.bigrams = bigrams # 可用bigrams来限定能够产生的bigram
+        self.bigram_vectors = bigram_vectors # 用于生成bigram vector特征
     def __call__(self,sentence):
         ext = '##' + sentence + '##'
         bigrams = [ext[i:i+2] for i in range(len(ext)-1)]
+        if hasattr(self, "bigram_vectors") and self.bigram_vectors :
+            bigram_vectors = [(self.bigram_vectors[b] if b in self.bigram_vectors else None) for b in bigrams]
         if self.bigrams :
             bigrams = [(b if b in self.bigrams else '~~') for b in bigrams]
         features = []
         for i in range(len(sentence)) :
-            features.append([ext[i+1]+'r', ext[i+2]+'M', ext[i+3]+'l',
-                bigrams[i]+'R', bigrams[i+1]+'r', bigrams[i+2]+'l', bigrams[i+3] + 'L'])
+            fv =[
+                    ext[i+1]+'r', ext[i+2]+'M', ext[i+3]+'l',
+                    bigrams[i]+'R', bigrams[i+1]+'r', bigrams[i+2]+'l', bigrams[i+3] + 'L',
+                ]
+            if hasattr(self, "bigram_vectors") and self.bigram_vectors :
+                fv += [
+                    ['R-vec',bigram_vectors[i]],
+                    ['r-vec',bigram_vectors[i+1]],
+                    ['l-vec',bigram_vectors[i+2]],
+                    ['L-vec',bigram_vectors[i+3]],
+                    ]
+            features.append(fv)
         return features

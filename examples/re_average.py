@@ -1,34 +1,13 @@
 #!/usr/bin/python3
-from oneseg.segger import *
-from oneseg.pipeline import *
-"""
-re-average method for regularization
-"""
 import random
 import numpy as np
 
-def average_weights(weights_list, only_non_zeros = False):
-    averaged = {}
-    if only_non_zeros : N = {}
-    for weights in weights_list :
-        for k, v in weights.items() :
-            if k in averaged :
-                averaged[k] += v
-            else :
-                averaged[k] = v
-            if only_non_zeros :
-                if k in N :
-                    N[k] += np.abs(np.sign(v))
-                else :
-                    N[k] = np.abs(np.sign(v))
-    n = len(weights_list)
-    for k, v in averaged.items():
-        if not only_non_zeros : 
-            v /= n
-        else :
-            mask = np.where(N[k], N[k], N[k]+1)
-            averaged[k] = np.where(N[k], averaged[k]/mask, averaged[k])
-    return averaged
+from oneseg.segger import *
+from oneseg.pipeline import *
+from oneseg.online_learner import average_weights
+"""
+re-average method for regularization
+"""
 
 if __name__ == '__main__':
     # some refs

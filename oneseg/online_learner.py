@@ -42,12 +42,20 @@ class Learner :
         grad = dict()
         features = self.feature_generator(sentence)
         for i in range(len(sentence)) :
+            if y[i] == z[i] : continue
             vec = np.zeros(self.tag_size)
             vec[y[i]] += 1
             vec[z[i]] -= 1
             for key in features[i]:
-                x = grad.setdefault(key, np.zeros(self.tag_size))
-                x += vec
+                if type(key) is not list :
+                    x = grad.setdefault(key, np.zeros(self.tag_size))
+                    x += vec
+                else :
+                    weight_key, feature_vector = key
+                    if feature_vector is not None :
+                        x = grad.setdefault(weight_key, np.zeros((self.tag_size, feature_vector.shape[0])))
+                        x += vec[:,np.newaxis] * feature_vector / 100
+                    pass
 
         trans = np.zeros([self.tag_size, self.tag_size])
         for i in range(len(y)-1):

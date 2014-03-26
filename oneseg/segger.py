@@ -99,9 +99,9 @@ class Base_Segger(Online) :
             words_list.append(words)
         return words_list
 
-    def __init__(self, bigrams = None):
+    def __init__(self, bigrams = None, bigram_vectors = None):
         tag_size = 4 # for cws
-        feature_generator = Feature_Generator(bigrams = bigrams)
+        feature_generator = Feature_Generator(bigrams = bigrams, bigram_vectors = bigram_vectors)
         decoder = Decoder(feature_generator, tag_size = tag_size)
         learner = Learner(feature_generator, tag_size = tag_size)
         super(Base_Segger, self).__init__(decoder, learner = learner, Eval = Tag_Evaluator,
