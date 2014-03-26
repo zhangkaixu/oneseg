@@ -6,18 +6,27 @@ class Online :
         self.Eval = Eval
         self.weights = weights
 
-    def fit(self, train_x, train_y, 
+    def fit(self, train_x, train_y,
+            train_Y = None, subset = None,
             dev_x = None, dev_y = None,
             iterations = 5):
         self.learner.reset()
         for it in range(iterations) :
             if self.Eval : evaluator = self.Eval()
             c = 0
-            for x, y in zip(train_x, train_y) :
-                c += 1
-                if c % 100 == 0 :
-                    print(c, end='\r', file = sys.stderr)
+            for c in range(len(train_x)):
+                x = train_x[c]
+                y = train_y[c]
+                if c % 100 == 0 : print("%d (%.1f%%)"%(c, c/len(train_x)*100), end='\r', file = sys.stderr)
                 z = self.decoder(x, self.weights)
+
+                if train_Y :
+                    Y = train_Y[c]
+                    if subset(z, Y) :
+                        y = z
+                    else :
+                        self.decoder(x, self.weights, subset = Y)
+
                 self.learner(x, y, z, self.weights)
                 if self.Eval : evaluator(y, z)
             if self.Eval : evaluator.report()

@@ -104,7 +104,8 @@ class Base_Segger(Online) :
         feature_generator = Feature_Generator(bigrams = bigrams)
         decoder = Decoder(feature_generator, tag_size = tag_size)
         learner = Learner(feature_generator, tag_size = tag_size)
-        super(Base_Segger, self).__init__(decoder, learner = learner, Eval = Tag_Evaluator)
+        super(Base_Segger, self).__init__(decoder, learner = learner, Eval = Tag_Evaluator,
+                weights = {})
 
     def fit(self, xs, ys, dev_x, dev_y, **args):
         y_seq = Base_Segger.encode(ys)
