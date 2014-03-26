@@ -4,8 +4,11 @@ from oneseg.pipeline import *
 
 import pickle
 import gzip
-
 import numpy as np
+
+"""
+在特征中引入bigram vector，可提高效果
+"""
 
 def load_vector(filename):
     bigrams = {}

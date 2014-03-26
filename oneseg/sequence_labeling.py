@@ -15,7 +15,6 @@ class Decoder :
                     for key in features[i]
                     if type(key) is list and key[1] is not None and key[0] in weights
                     )
-
         values = [x for x in values]
         return values, weights.get('trans', np.zeros((self.tag_size, self.tag_size)))
 
@@ -96,7 +95,6 @@ class Decoder :
             for i in range(len(betas))]
         return margins
 
-
 class Feature_Generator :
     '''根据模板生成特征'''
     def __init__(self, bigrams = None, bigram_vectors = None):
@@ -106,7 +104,10 @@ class Feature_Generator :
         ext = '##' + sentence + '##'
         bigrams = [ext[i:i+2] for i in range(len(ext)-1)]
         if hasattr(self, "bigram_vectors") and self.bigram_vectors :
-            bigram_vectors = [(self.bigram_vectors[b] if b in self.bigram_vectors else None) for b in bigrams]
+            bigram_vectors = [
+                    (self.bigram_vectors[b] if b in self.bigram_vectors else None) 
+                    for b in bigrams
+                    ]
         if self.bigrams :
             bigrams = [(b if b in self.bigrams else '~~') for b in bigrams]
         features = []
