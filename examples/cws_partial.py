@@ -8,6 +8,7 @@ import random
 import numpy as np
 
 def gen_Ys(ys):
+    """ 随机将唯一的标准答案污染成一个可行解集合 """
     ys = Base_Segger.encode(ys)
     for i in range(len(ys)) :
         y = ys[i]
@@ -23,7 +24,8 @@ def gen_Ys(ys):
     return ys
 
 def subset(y, Y):
-    return all(Y[i][y[i]] == 1 for i in range(len(y)))
+    """判断一个结果是否在可行的子集之中"""
+    return all(Y[i][y[i]] == 0 for i in range(len(y)))
 
 
 if __name__ == '__main__':
