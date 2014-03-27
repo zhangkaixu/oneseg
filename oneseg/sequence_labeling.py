@@ -34,10 +34,11 @@ class Decoder :
 
     def __call__(self, sentence, weights, 
             emission_constraints = None, transition_constraints = None,
-            with_details = False,
+            with_details = False, subset = None,
             ):
-        emissions,transitions = self.put_value(sentence, weights)
+        emissions, transitions = self.put_value(sentence, weights)
 
+        if subset : emission_constraints = subset
         if emission_constraints is not None : 
             emissions = [e + ec for e,ec in zip(emissions, emission_constraints)]
         if transition_constraints is not None :
@@ -54,7 +55,8 @@ class Decoder :
             al_ind = points[i][al_ind]
 
         if with_details == False :
-            return list(reversed(tags))
+            result = list(reversed(tags))
+            return result
         else :
             betas, _ = self.forward(list(reversed(emissions)), transitions.T)
             betas = list(reversed(betas)) # do not forget this

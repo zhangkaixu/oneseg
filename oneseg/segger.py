@@ -108,9 +108,11 @@ class Base_Segger(Online) :
         super(Base_Segger, self).__init__(decoder, learner = learner, Eval = Tag_Evaluator,
                 weights = {})
 
-    def fit(self, xs, ys, dev_x, dev_y, **args):
+    def fit(self, xs, ys, 
+            dev_x = None, dev_y = None, 
+            **args):
         y_seq = Base_Segger.encode(ys)
-        dev_y_seq = Base_Segger.encode(dev_y)
+        dev_y_seq = Base_Segger.encode(dev_y) if dev_y else None
         super(Base_Segger, self).fit(xs, y_seq, dev_x = dev_x, dev_y = dev_y_seq, **args)
 
     def predict(self, xs, **args):
@@ -126,3 +128,4 @@ class Base_Segger(Online) :
             results.append(Base_Segger.decode([x], [result]))
             margins.append(margin)
         return results, margins
+

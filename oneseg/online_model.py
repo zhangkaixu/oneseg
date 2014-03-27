@@ -19,12 +19,12 @@ class Online :
                 y = train_y[c]
                 z = self.decoder(x, self.weights)
 
-                if train_Y :
+                if train_Y : # 训练时
                     Y = train_Y[c]
                     if subset(z, Y) :
                         y = z
                     else :
-                        self.decoder(x, self.weights, subset = Y)
+                        y = self.decoder(x, self.weights, subset = Y)
 
                 self.learner(x, y, z, self.weights)
                 if self.Eval : evaluator(y, z)
