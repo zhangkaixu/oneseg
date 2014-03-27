@@ -16,7 +16,7 @@ class Decoder :
                     if type(key) is list and key[1] is not None and key[0] in weights
                     )
         values = [x for x in values]
-        return values, weights.get('trans', np.zeros((self.tag_size, self.tag_size)))
+        return values, weights.get('trans', np.zeros((self.tag_size, self.tag_size))).copy()
 
     def forward(self, emissions, transitions) :
         """
@@ -26,14 +26,15 @@ class Decoder :
         points = [emissions[0]]
         for i in range(len(emissions)-1) :
             x = transitions + alphas[-1][:,np.newaxis] + emissions[i+1]
-            points = x.argmax(axis = 0)
-            m = x[(points,range(self.tag_size))] # "or"; m = x.max(axis = 0)
+            point = x.argmax(axis = 0)
+            m = x[(point,range(self.tag_size))] # "or"; m = x.max(axis = 0)
             alphas.append(m)
-            points.append(points)
+            points.append(point)
         return alphas, points
 
     def __call__(self, sentence, weights, 
-            emission_constraints = None, transition_constraints = None
+            emission_constraints = None, transition_constraints = None,
+            with_details = False,
             ):
         emissions,transitions = self.put_value(sentence, weights)
 
@@ -52,21 +53,20 @@ class Decoder :
             i-=1
             al_ind = points[i][al_ind]
 
-        return list(reversed(tags))
+        if with_details == False :
+            return list(reversed(tags))
+        else :
+            betas, _ = self.forward(list(reversed(emissions)), transitions.T)
+            betas = list(reversed(betas)) # do not forget this
+            return emissions, transitions, alphas, betas, list(reversed(tags))
 
-    def cal_margins(self,sentence, weights):
-        emissions,transitions = self.put_value(sentence, weights)
-
-        alphas, _ = self.forward(emissions, transitions)
-        betas, _ = self.forward(list(reversed(emissions)), transitions.T)
-        betas = list(reversed(betas))
-
+    def cal_margin(self, alphas, betas, emissions):
         max_score = max([alphas[-1][j],j] for j in range(self.tag_size))[0]
-
         margins = [ 
                 [max_score - alphas[i][j] - betas[i][j] + emissions[i][j] for j in range(self.tag_size)] 
             for i in range(len(betas))]
-        return margins
+        margin = (min(list(sorted(m))[1] for m in margins))
+        return margin
 
 class Feature_Generator :
     '''根据模板生成特征'''

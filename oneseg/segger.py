@@ -6,6 +6,7 @@ import sys
 from oneseg.online_model import Online
 from oneseg.online_learner import Learner
 from oneseg.sequence_labeling import Decoder, Feature_Generator
+from oneseg.utils import show_progress # 训练、解码比较慢，显式进度，增加耐心
 
 TAG_B = 3
 TAG_M = 2
@@ -115,3 +116,13 @@ class Base_Segger(Online) :
     def predict(self, xs, **args):
         yys = super(Base_Segger, self).predict(xs, **args)
         return Base_Segger.decode(xs, yys)
+
+    def predict_with_margin(self, test_x):
+        results = []
+        margins = []
+        for x in show_progress(test_x) :
+            emissions, transitions, alphas, betas, result = self.decoder(x, self.weights, with_details = True)
+            margin = self.decoder.cal_margin(alphas, betas, emissions)
+            results.append(Base_Segger.decode([x], [result]))
+            margins.append(margin)
+        return results, margins

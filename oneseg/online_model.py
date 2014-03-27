@@ -1,4 +1,5 @@
-import sys
+from oneseg.utils import show_progress # 训练、解码比较慢，显式进度，增加耐心
+
 class Online :
     def __init__(self, decoder, weights = {}, learner = None, Eval = None):
         self.decoder = decoder
@@ -13,11 +14,9 @@ class Online :
         self.learner.reset()
         for it in range(iterations) :
             if self.Eval : evaluator = self.Eval()
-            c = 0
-            for c in range(len(train_x)):
+            for c in show_progress(len(train_x)):
                 x = train_x[c]
                 y = train_y[c]
-                if c % 100 == 0 : print("%d (%.1f%%)"%(c, c/len(train_x)*100), end='\r', file = sys.stderr)
                 z = self.decoder(x, self.weights)
 
                 if train_Y :
@@ -34,7 +33,7 @@ class Online :
             averaged = self.learner.average(self.weights)
 
             if self.Eval : evaluator = self.Eval()
-            for x, y in zip(dev_x, dev_y) :
+            for x, y in show_progress(zip(dev_x, dev_y), len(dev_x)) :
                 z = self.decoder(x, averaged)
                 if self.Eval : evaluator(y, z)
             if self.Eval : evaluator.report()
@@ -44,14 +43,8 @@ class Online :
 
     def predict(self, test_x):
         result_y = []
-        for x in test_x :
+        for x in show_progress(test_x) :
             y = self.decoder(x, self.weights)
             result_y.append(y)
         return result_y
 
-    def predict_margin(self, test_x):
-        results = []
-        for x in test_x :
-            margins = self.decoder.cal_margins(x, self.weights)
-            results.append(margins)
-        return results
