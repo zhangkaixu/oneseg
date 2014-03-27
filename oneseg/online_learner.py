@@ -27,7 +27,6 @@ def average_weights(weights_list, only_non_zeros = False):
     return averaged
 
 
-
 class Learner :
     def reset(self):
         self.step = 0

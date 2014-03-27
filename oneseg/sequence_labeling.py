@@ -1,6 +1,6 @@
 import numpy as np
 class Decoder :
-    """解码算法"""
+    """ 类隐马尔科夫解码算法 """
     def __init__(self, feature_generator, tag_size = 4):
         self.feature_generator = feature_generator
         self.tag_size = tag_size
@@ -18,80 +18,53 @@ class Decoder :
         values = [x for x in values]
         return values, weights.get('trans', np.zeros((self.tag_size, self.tag_size)))
 
+    def forward(self, emissions, transitions) :
+        """
+        前向算法，改改输入就可以变为后向算法
+        """
+        alphas = [emissions[0]]
+        points = [emissions[0]]
+        for i in range(len(emissions)-1) :
+            x = transitions + alphas[-1][:,np.newaxis] + emissions[i+1]
+            points = x.argmax(axis = 0)
+            m = x[(points,range(self.tag_size))] # "or"; m = x.max(axis = 0)
+            alphas.append(m)
+            points.append(points)
+        return alphas, points
+
     def __call__(self, sentence, weights, 
-            emission_constraints = None, transition_constraints = None):
+            emission_constraints = None, transition_constraints = None
+            ):
         emissions,transitions = self.put_value(sentence, weights)
-        """
-        transition_constraints = np.array([
-            [0, -np.inf, -np.inf, 0],
-            [0, -np.inf, -np.inf, 0],
-            [-np.inf, 0, 0, -np.inf],
-            [-np.inf, 0, 0, -np.inf],
-            ])
-        """
+
         if emission_constraints is not None : 
             emissions = [e + ec for e,ec in zip(emissions, emission_constraints)]
         if transition_constraints is not None :
             transitions += transition_constraints
 
-        # 备用的搜索方案，均使用矩阵操作，但分词上速度还慢些
-        a2 = [emissions[0]]
-        p2 = [emissions[0]]
-        for i in range(len(emissions)-1) :
-            x = transitions + a2[-1][:,np.newaxis] + emissions[i+1]
-            points = x.argmax(axis = 0)
-            m = x[(points,range(self.tag_size))] # "or"; m = x.max(axis = 0)
-            a2.append(m)
-            p2.append(points)
+        alphas, points = self.forward(emissions, transitions)
 
-        al_ind = a2[-1].argmax()
+        al_ind = alphas[-1].argmax()
         i=len(emissions)
-        #"""
         tags=[]
         while i :
             tags.append(al_ind)
             i-=1
-            al_ind = p2[i][al_ind]#"""
+            al_ind = points[i][al_ind]
+
         return list(reversed(tags))
-
-        """
-        emissions = [e.tolist() for e in emissions]
-        transitions = transitions.tolist()
-        alphas=[[[e,None] for e in emissions[0]]] # [分数, 上一状态]
-        for i in range(len(emissions)-1) :
-            alphas.append([max([alphas[i][j][0]+transitions[j][k]+emissions[i+1][k], j]
-                                        for j in range(self.tag_size)) # 枚举前一状态
-                                        for k in range(self.tag_size)]) # 枚举后一状态
-        # 根据alphas中的“指针”得到最优序列
-        alpha=max([alphas[-1][j],j] for j in range(self.tag_size))
-
-        i=len(emissions)
-        tags=[]
-        while i :
-            tags.append(alpha[1])
-            i-=1
-            alpha=alphas[i][alpha[1]]
-        #return list(reversed(tags))#"""
 
     def cal_margins(self,sentence, weights):
         emissions,transitions = self.put_value(sentence, weights)
 
-        alphas=[[[e,None] for e in emissions[0]]] # [分数, 上衣状态]
-        for i in range(len(emissions)-1) :
-            alphas.append([max([alphas[i][j][0]+transitions[j][k]+emissions[i+1][k], j]
-                                        for j in range(self.tag_size)) # 枚举前一状态
-                                        for k in range(self.tag_size)]) # 枚举后一状态
-
-        max_score = max([alphas[-1][j],j] for j in range(self.tag_size))[0][0]
-
-        betas = [[[e, None] for e in emissions[-1]]]
-        for i in range(len(emissions)-2,-1,-1):
-            betas.append([max([betas[-1][j][0]+transitions[k][j]+emissions[i][k], j]
-                                        for j in range(self.tag_size)) # 枚举右边状态
-                                        for k in range(self.tag_size)]) # 枚举左边状态
+        alphas, _ = self.forward(emissions, transitions)
+        betas, _ = self.forward(list(reversed(emissions)), transitions.T)
         betas = list(reversed(betas))
+
+        max_score = max([alphas[-1][j],j] for j in range(self.tag_size))[0]
+
         margins = [ 
-                [max_score - alphas[i][j][0] - betas[i][j][0] + emissions[i][j] for j in range(self.tag_size)] 
+                [max_score - alphas[i][j] - betas[i][j] + emissions[i][j] for j in range(self.tag_size)] 
             for i in range(len(betas))]
         return margins
 

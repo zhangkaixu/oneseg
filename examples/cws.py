@@ -16,7 +16,7 @@ if __name__ == '__main__':
     dev_x, dev_y = load_seg_file(dev_file)
     test_x, test_y = load_seg_file(test_file)
 
-    #train_x, train_y = dev_x, dev_y # for debug
+    train_x, train_y = dev_x, dev_y # for debug
 
     # init the model
     bigrams = count_bigrams(train_x, max_size = 100000)
