@@ -41,12 +41,14 @@ class CWS_Evaluator : # 评价
         self.std+=len(std)
         self.rst+=len(rst)
         self.cor+=len(std&rst)
-    def report(self):
+    def report(self, quiet = False):
         precision=self.cor/self.rst if self.rst else 0
         recall=self.cor/self.std if self.std else 0
         f1=2*precision*recall/(precision+recall) if precision+recall!=0 else 0
-        print("历时: %.2f秒 答案词数: %i 结果词数: %i 正确词数: %i F值: %.4f"
-                %(time.time()-self.start_time,self.std,self.rst,self.cor,f1))
+        if not quiet :
+            print("历时: %.2f秒 答案词数: %i 结果词数: %i 正确词数: %i F值: %.4f"
+                    %(time.time()-self.start_time,self.std,self.rst,self.cor,f1))
+        return f1
     def eval_all(self,test_x, test_y):
         for x, y in zip(test_x, test_y):
             self(x,y)

@@ -32,11 +32,14 @@ class Online :
 
             averaged = self.learner.average(self.weights)
 
-            if self.Eval : evaluator = self.Eval()
-            for x, y in show_progress(zip(dev_x, dev_y), len(dev_x)) :
-                z = self.decoder(x, averaged)
-                if self.Eval : evaluator(y, z)
-            if self.Eval : evaluator.report()
+            if dev_x is not None :
+                if self.Eval : evaluator = self.Eval()
+                for x, y in show_progress(zip(dev_x, dev_y), len(dev_x)) :
+                    z = self.decoder(x, averaged)
+                    if self.Eval : evaluator(y, z)
+                if self.Eval : evaluator.report()
+
+        self.evaluator = evaluator
 
         self.weights = averaged
         self.learner.reset()
