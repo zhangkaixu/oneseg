@@ -1,0 +1,143 @@
+<style>
+    .content {width : 60%; margin-left : auto; margin-right :auto;}
+    .sentence {
+        -moz-user-select:none;-webkit-user-select:none;
+    }
+    span {font-size : x-large;}
+    .interval-unknown {color : blue; background-color : yellow}
+    .interval-break {color : black; background-color : black}
+    .interval-connect {color : white; background-color : white}
+
+</style>
+
+<body onkeydown="keydown(event)">
+<div class = "content">
+    置信度 ： {{ margin }} <br/>
+    <input type= "button" value = "前一句" onclick = 'another_sentence(-1)' />
+    第{{ sentence_id }}句
+    <input type= "button" value = "后一句" onclick = 'another_sentence(1)'/>
+    <input type= "button" value = "提交" onclick = 'submit()'/>
+    <div class = "sentence" id = 'sentence'>
+    </div>
+    <input type= "button" value = "save" onclick = 'save()'/>
+
+</div>
+
+</body>
+
+
+<script>
+    sentence_id = {{ sentence_id }};
+    raw = {{ raw }} ;
+    anno = {{ anno }} ;
+    original = {{ anno }} ;
+    margins = {{ margins }} ;
+    predicted = {{ predicted }};
+
+    className = {
+        '?' : 'interval-unknown',
+        '|' : 'interval-break',
+        '-' : 'interval-connect',
+    }
+    showHTML = {
+        '?' : '~',
+        '|' : '|',
+        '-' : '',
+    }
+    function show_interval(tag, index){
+        s = showHTML[tag]
+        if((s=='~')&&(predicted.length > 0)){
+            s = predicted[index]
+        }
+        return s
+    }
+    function another_sentence(offset){
+        new_sen = sentence_id + offset
+        window.location.href = new_sen
+    }
+
+    function change_seg(index, tag){
+        anno[index] = tag
+        obj = document.getElementById('inter-'+index)
+        obj.innerHTML = showHTML[tag]
+        obj.className = className[tag]
+    }
+    function submit(){
+        window.location.href = sentence_id+"?anno="+anno.join('')
+    }
+    function save(){
+        window.location.href = sentence_id+"?anno=save"
+    }
+
+    start_ind = 0;
+    function start(index){
+        start_ind = index
+    }
+    function end(index){
+        if (start_ind > index){
+            tmp = start_ind
+            start_ind =index
+            index = tmp
+        }
+        if(start_ind - 1 >= 0){
+            change_seg(start_ind -1, '|')
+        }
+        for(i = start_ind; i< index; i++){
+            change_seg(i, '-')
+        }
+        if(index < anno.length){
+            change_seg(index, '|')
+        }
+        
+    }
+    function keydown(event){
+        code = event.which
+        if(code == 88){ 
+            last = -1
+            for(i in anno)if(anno[i] !='?'){
+                last = i
+            }
+            if(last!=-1){
+                change_seg(last, '?')
+            }
+            return 
+        }
+        if((code - 48 >= 0)&&(code - 48 < 10)){
+            num = code - 48
+            for(i in anno)if(anno[i] =='?'){
+                num -= 1
+                if(num){
+                    change_seg(i, '-')
+                }else {
+                    change_seg(i, '|')
+                    break
+                }
+            }
+            return
+        }
+        if(code == 13){ submit(); return }
+        if(code == 37){ another_sentence(-1); return }
+        if(code == 39){ another_sentence(1); return }
+        //alert(code)
+    }
+
+    html = []
+    for(i in raw){
+        if(margins.length > 0){
+            conf = Math.round(margins[i] * 10)
+            conf = 255 - conf
+            if(conf > 255) conf = 255
+            if(conf < 0) conf = 0
+            html.push("<span onmousedown='start("+i+")' onmouseup='end("+i+")' style='color:rgb("+conf+",0,0);'>"+raw[i]+"</span>")
+        }else{
+            html.push("<span onmousedown='start("+i+")' onmouseup='end("+i+")' >"+raw[i]+"</span>")
+        }
+        if(i < anno.length){
+            //html.push("<span id = 'inter-"+i+"' class = '"+className[anno[i]]+"'>"+showHTML[anno[i]]+"</span>")
+            html.push("<span id = 'inter-"+i+"' class = '"+className[anno[i]]+"'>"+show_interval(anno[i],i)+"</span>")
+        }
+    }
+
+    document.getElementById('sentence').innerHTML = html.join(' ')
+
+</script>

@@ -121,13 +121,13 @@ class Base_Segger(Online) :
         yys = super(Base_Segger, self).predict(xs, **args)
         return Base_Segger.decode(xs, yys)
 
-    def predict_with_margin(self, test_x):
+    def predict_with_margin(self, test_x, as_sequence = False):
         results = []
         margins = []
         for x in show_progress(test_x) :
             emissions, transitions, alphas, betas, result = self.decoder(x, self.weights, with_details = True)
-            margin = self.decoder.cal_margin(alphas, betas, emissions)
-            results.append(Base_Segger.decode([x], [result]))
+            margin = self.decoder.cal_margin(alphas, betas, emissions, as_sequence = as_sequence)
+            results.append(Base_Segger.decode([x], [result])[0])
             margins.append(margin)
         return results, margins
 

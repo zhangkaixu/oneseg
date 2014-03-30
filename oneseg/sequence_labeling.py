@@ -62,13 +62,17 @@ class Decoder :
             betas = list(reversed(betas)) # do not forget this
             return emissions, transitions, alphas, betas, list(reversed(tags))
 
-    def cal_margin(self, alphas, betas, emissions):
+    def cal_margin(self, alphas, betas, emissions, as_sequence = False):
         max_score = max([alphas[-1][j],j] for j in range(self.tag_size))[0]
         margins = [ 
                 [max_score - alphas[i][j] - betas[i][j] + emissions[i][j] for j in range(self.tag_size)] 
             for i in range(len(betas))]
-        margin = (min(list(sorted(m))[1] for m in margins))
-        return margin
+        if not as_sequence :
+            margin = (min(list(sorted(m))[1] for m in margins))
+            return margin
+        else :
+            margin = list(list(sorted(m))[1] for m in margins)
+            return margin
 
 class Feature_Generator :
     '''根据模板生成特征'''

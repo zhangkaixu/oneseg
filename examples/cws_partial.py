@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 from oneseg.segger import *
-from oneseg.pipeline import *
 
 import pickle
 import gzip
