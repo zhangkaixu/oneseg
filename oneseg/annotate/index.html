@@ -16,6 +16,7 @@
     <input type= "button" value = "前一句" onclick = 'another_sentence(-1)' />
     第{{ sentence_id }}句
     <input type= "button" value = "后一句" onclick = 'another_sentence(1)'/>
+    <input type= "button" value = "apply" onclick = 'apply()'/>
     <input type= "button" value = "提交" onclick = 'submit()'/>
     <div class = "sentence" id = 'sentence'>
     </div>
@@ -69,11 +70,12 @@
         window.location.href = sentence_id+"?anno=save"
     }
 
-    start_ind = 0;
+    start_ind = -1;
     function start(index){
         start_ind = index
     }
     function end(index){
+        if(start_ind == -1) return;
         if (start_ind > index){
             tmp = start_ind
             start_ind =index
@@ -88,6 +90,7 @@
         if(index < anno.length){
             change_seg(index, '|')
         }
+        start_ind = -1
         
     }
     function keydown(event){
@@ -119,6 +122,13 @@
         if(code == 37){ another_sentence(-1); return }
         if(code == 39){ another_sentence(1); return }
         //alert(code)
+    }
+    function apply(){
+        if(predicted.length > 0){
+            for(i in predicted){
+                if(anno[i]=='?') change_seg(i,predicted[i])
+            }
+        }
     }
 
     html = []
