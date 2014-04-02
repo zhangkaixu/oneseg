@@ -1,6 +1,17 @@
 import sys
 import random
 
+class Indexer :
+    def __init__(self):
+        self.list = []
+        self.dict = {}
+        pass
+    def __call__(self, key):
+        if key not in self.dict :
+            self.dict[key] = len(self.list)
+            self.list.append(key)
+        return self.dict[key]
+
 def co_shuffle(*lists):
     seed = random.random()
     for i in range(len(lists)):
