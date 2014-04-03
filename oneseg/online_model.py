@@ -31,6 +31,7 @@ class Online :
             if self.Eval : evaluator.report()
 
             averaged = self.learner.average(self.weights)
+            #averaged = self.weights
 
             if dev_x is not None :
                 if self.Eval : evaluator = self.Eval()
