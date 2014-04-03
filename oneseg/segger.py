@@ -1,21 +1,8 @@
-import numpy as np
 from collections import Counter
-import time
-import sys
-
-from oneseg.online_model import Online
-from oneseg.online_learner import Learner
-from oneseg.sequence_labeling import Decoder, Feature_Generator
-from oneseg.utils import show_progress # 训练、解码比较慢，显式进度，增加耐心
-
-TAG_B = 3
-TAG_M = 2
-TAG_E = 1
-TAG_S = 0
+from oneseg.character_labeling import Character_Labeler
+from oneseg.segtag_evaluator import SegTag_Evaluator
 
 def load_seg_file(filename):
-    """
-    """
     xs = []
     ys = []
     for line in open(filename):
@@ -23,35 +10,6 @@ def load_seg_file(filename):
         ys.append(y)
         xs.append(''.join(y))
     return xs, ys
-
-"""评价"""
-class CWS_Evaluator : # 评价
-    def __init__(self):
-        self.std,self.rst,self.cor=0,0,0
-        self.start_time=time.time()
-    def _gen_set(self,words):
-        offset=0
-        word_set=set()
-        for word in words:
-            word_set.add((offset,word))
-            offset+=len(word)
-        return word_set
-    def __call__(self,std,rst): # 根据答案std和结果rst进行统计
-        std,rst=self._gen_set(std),self._gen_set(rst)
-        self.std+=len(std)
-        self.rst+=len(rst)
-        self.cor+=len(std&rst)
-    def report(self, quiet = False):
-        precision=self.cor/self.rst if self.rst else 0
-        recall=self.cor/self.std if self.std else 0
-        f1=2*precision*recall/(precision+recall) if precision+recall!=0 else 0
-        if not quiet :
-            print("历时: %.2f秒 答案词数: %i 结果词数: %i 正确词数: %i F值: %.4f"
-                    %(time.time()-self.start_time,self.std,self.rst,self.cor,f1))
-        return f1
-    def eval_all(self,test_x, test_y):
-        for x, y in zip(test_x, test_y):
-            self(x,y)
 
 '''输出高频bigram'''
 def count_bigrams(train_x, max_size = 10000):
@@ -69,65 +27,34 @@ def count_bigrams(train_x, max_size = 10000):
     counter = Counter({k:v for k,v in counter.items() if v >= min_freq})
     return counter
 
-class Tag_Evaluator(CWS_Evaluator) : # 评价
-    def __call__(self,std,rst): # 根据答案std和结果rst进行统计
-        std = Base_Segger.decode(['0'*len(std)],[std])[0]
-        rst = Base_Segger.decode(['0'*len(rst)],[rst])[0]
-        super(Tag_Evaluator,self).__call__(std,rst)
 
-class Base_Segger(Online) :
-    @staticmethod
-    def encode(words_list):
-        ys = []
-        for words in words_list :
-            y=[]
-            for word in words :
-                if len(word)==1 : y.append(TAG_S)
-                else : y.extend([TAG_B]+[TAG_M]*(len(word)-2)+[TAG_E])
-            ys.append(y)
-        return ys
 
-    @staticmethod
-    def decode(xs, ys):
-        words_list = []
-        for x, y in zip(xs, ys):
-            cache=''
-            words=[]
-            for i in range(len(x)) :
-                cache+=x[i]
-                if y[i]==TAG_E or y[i]==TAG_S :
-                    words.append(cache)
-                    cache=''
-            if cache : words.append(cache)
-            words_list.append(words)
-        return words_list
+class Codec :
+    TAG_B = 3
+    TAG_M = 2
+    TAG_E = 1
+    TAG_S = 0
+    def get_size(self):
+        return 4
+    def encode(self, words):
+        y=[]
+        for word in words :
+            if len(word)==1 : y.append(Codec.TAG_S)
+            else : y.extend([Codec.TAG_B]+[Codec.TAG_M]*(len(word)-2)+[Codec.TAG_E])
+        return y
+    def decode(self, x, y):
+        cache=''
+        words=[]
+        for i in range(len(x)) :
+            cache+=x[i]
+            if y[i]==Codec.TAG_E or y[i]==Codec.TAG_S :
+                words.append(cache)
+                cache=''
+        if cache : words.append(cache)
+        return words
 
-    def __init__(self, bigrams = None, bigram_vectors = None):
-        tag_size = 4 # for cws
-        feature_generator = Feature_Generator(bigrams = bigrams, bigram_vectors = bigram_vectors)
-        decoder = Decoder(feature_generator, tag_size = tag_size)
-        learner = Learner(feature_generator, tag_size = tag_size)
-        super(Base_Segger, self).__init__(decoder, learner = learner, Eval = Tag_Evaluator,
-                weights = {})
 
-    def fit(self, xs, ys, 
-            dev_x = None, dev_y = None, 
-            **args):
-        y_seq = Base_Segger.encode(ys)
-        dev_y_seq = Base_Segger.encode(dev_y) if dev_y else None
-        super(Base_Segger, self).fit(xs, y_seq, dev_x = dev_x, dev_y = dev_y_seq, **args)
-
-    def predict(self, xs, **args):
-        yys = super(Base_Segger, self).predict(xs, **args)
-        return Base_Segger.decode(xs, yys)
-
-    def predict_with_margin(self, test_x, as_sequence = False):
-        results = []
-        margins = []
-        for x in show_progress(test_x) :
-            emissions, transitions, alphas, betas, result = self.decoder(x, self.weights, with_details = True)
-            margin = self.decoder.cal_margin(alphas, betas, emissions, as_sequence = as_sequence)
-            results.append(Base_Segger.decode([x], [result])[0])
-            margins.append(margin)
-        return results, margins
+class Base_Segger(Character_Labeler):
+    def __init__(self, **args):
+        super().__init__(Codec, SegTag_Evaluator, **args)
 
