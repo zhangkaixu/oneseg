@@ -17,7 +17,6 @@ class Codec :
     def __init__(self):
         self.indexer = Indexer()
     def get_size(self):
-        #print(len(self.indexer.list))
         return len(self.indexer.list)
     def encode(self, y):
         tags = []
@@ -41,7 +40,8 @@ class Codec :
                 cache = []
         return sentence
 
-
 class Base_SegTag(Character_Labeler):
     def __init__(self, **args):
-        super().__init__(Codec, SegTag_Evaluator, **args)
+        codec = Codec()
+        evaluator = SegTag_Evaluator(codec)
+        super().__init__(codec, evaluator, **args)

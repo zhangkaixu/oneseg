@@ -6,7 +6,8 @@ class SegTag_Evaluator :
         self.seg_std,self.seg_rst,self.seg_cor=0,0,0
         self.start_time=time.time()
 
-    def __init__(self):
+    def __init__(self, codec = None):
+        self.codec = codec
         self.reset()
 
     def _gen_set(self, words):
@@ -20,7 +21,12 @@ class SegTag_Evaluator :
                 offset+=len(word)
         return word_set
         
-    def __call__(self, y, z) :
+    def __call__(self, y, z, use_decoder = True) :
+        if use_decoder and self.codec is not None :
+            x = '.' * len(y)
+            y = self.codec.decode(x, y)
+            z = self.codec.decode(x, z)
+
         std,rst=self._gen_set(y),self._gen_set(z)
         self.std+=len(std)
         self.rst+=len(rst)
@@ -46,4 +52,4 @@ class SegTag_Evaluator :
 
     def eval_all(self,test_x, test_y):
         for x, y in zip(test_x, test_y):
-            self(x,y)
+            self(x,y, use_decoder = False)

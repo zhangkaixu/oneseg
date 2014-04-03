@@ -34,7 +34,9 @@ if __name__ == '__main__':
     segger = pickle.load(gzip.open('model.gz'))
 
     # use the model and evaluate outside
-    evaluator = CWS_Evaluator()
+    #evaluator = segger.evaluator # or you can do this
+    #evaluator.reset()
+    evaluator = SegTag_Evaluator()
     output = segger.predict(test_x)
     evaluator.eval_all(test_y, output)
     evaluator.report()

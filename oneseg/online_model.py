@@ -5,6 +5,7 @@ class Online :
         self.decoder = decoder
         self.learner = learner
         self.Eval = Eval
+        self.evaluator = Eval
         self.weights = weights
 
     def fit(self, train_x, train_y,
@@ -13,7 +14,7 @@ class Online :
             iterations = 5):
         self.learner.reset()
         for it in range(iterations) :
-            if self.Eval : evaluator = self.Eval()
+            if self.evaluator : self.evaluator.reset()
             for c in show_progress(len(train_x)):
                 x = train_x[c]
                 y = train_y[c]
@@ -27,20 +28,20 @@ class Online :
                         y = self.decoder(x, self.weights, subset = Y)
 
                 self.learner(x, y, z, self.weights)
-                if self.Eval : evaluator(y, z)
-            if self.Eval : evaluator.report()
+                if self.evaluator : self.evaluator(y, z)
+            if self.evaluator : self.evaluator.report()
 
             averaged = self.learner.average(self.weights)
             #averaged = self.weights
 
             if dev_x is not None :
-                if self.Eval : evaluator = self.Eval()
+                if self.evaluator : self.evaluator.reset()
                 for x, y in show_progress(zip(dev_x, dev_y), len(dev_x)) :
                     z = self.decoder(x, averaged)
-                    if self.Eval : evaluator(y, z)
-                if self.Eval : evaluator.report()
+                    if self.evaluator : self.evaluator(y, z)
+                if self.evaluator : self.evaluator.report()
 
-        self.evaluator = evaluator
+        #self.evaluator = evaluator
 
         self.weights = averaged
         self.learner.reset()

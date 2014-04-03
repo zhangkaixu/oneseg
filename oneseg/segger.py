@@ -56,5 +56,6 @@ class Codec :
 
 class Base_Segger(Character_Labeler):
     def __init__(self, **args):
-        super().__init__(Codec, SegTag_Evaluator, **args)
-
+        codec = Codec()
+        evaluator = SegTag_Evaluator(codec)
+        super().__init__(codec, evaluator, **args)

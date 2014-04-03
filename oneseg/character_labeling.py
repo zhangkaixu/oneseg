@@ -3,8 +3,9 @@ from oneseg.online_learner import Learner
 from oneseg.online_model import Online
 import pickle
 
+""" 
+# can not be pickled :(
 def wrap_eval(Eval, codec):
-
     class Wrapped_Eval(Eval):
         def __init__(self):
             super().__init__()
@@ -14,44 +15,25 @@ def wrap_eval(Eval, codec):
             z = codec.decode(x, z)
             super().__call__(y, z)
     return Wrapped_Eval
-
+    """
 
 class Character_Labeler(Online) :
     def __init__(self, 
-            Codec, Evaluator,
+            codec, evaluator,
             bigrams = None, bigram_vectors = None):
-        self.codec = Codec()
+        self.codec = codec
         feature_generator = Feature_Generator(bigrams = bigrams, bigram_vectors = bigram_vectors)
         decoder = Decoder(feature_generator)
         learner = Learner(feature_generator)
-
-        #self.Eval = wrap_eval(Evaluator, self.codec)
-        class Wrapped_Eval(Evaluator):
-            def __init__(self, codec):
-                self.codec = codec
-                super().__init__()
-            def __call__(self, y, z):
-                x = '.' * len(y)
-                y = self.codec.decode(x, y)
-                z = self.codec.decode(x, z)
-                super().__call__(y, z)
-
-        self.Eval = lambda : Wrapped_Eval(self.codec)
-
-        super().__init__(decoder, learner = learner, 
-                Eval = self.Eval,
-                weights = {})
+        super().__init__(decoder, learner = learner, Eval = evaluator, weights = {})
 
     def fit(self, xs, ys, 
             dev_x = None, dev_y = None, 
             **args):
         y_seq = [self.codec.encode(y) for y in ys]
-
         self.decoder.tag_size = self.codec.get_size()
         self.learner.tag_size = self.codec.get_size()
-
         dev_y_seq = [self.codec.encode(y) for y in dev_y] if dev_y else None
-
         super().fit(xs, y_seq, dev_x = dev_x, dev_y = dev_y_seq, **args)
 
     def predict(self, xs, **args):
