@@ -11,10 +11,13 @@ def seq_to_anno(y):
 
 if __name__ == '__main__':
     for line in sys.stdin :
-        line = line.split()
-        predicted = seq_to_anno(line)
-        line = ''.join(line)
+        line = line.strip().replace(' ','　')
+        #line = line.split()
+        #predicted = seq_to_anno(line)
+        #line = ''.join(line)
         anno = ['?' for i in range(len(line)-1)]
-        record = {'raw':line,'anno':anno, 'predicted' : predicted}
+        record = {'raw':line,'anno':anno, 
+                #'predicted' : predicted
+                }
         print(json.dumps(record, ensure_ascii = False))
 

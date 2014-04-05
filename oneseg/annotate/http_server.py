@@ -44,6 +44,7 @@ class Annotator :
         predicted = json.dumps(list(rec.get('predicted',[])))
         index_file = open('oneseg/annotate/index.html').read()
         index = Template(index_file).render({
+            'id' : rec.get('id','unknown'),
             'sentence_id' : index,
             'raw' : raw,
             'anno' : anno,

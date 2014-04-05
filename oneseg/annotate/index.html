@@ -12,9 +12,9 @@
 
 <body onkeydown="keydown(event)">
 <div class = "content">
-    置信度 ： {{ margin }} <br/>
+    id: {{ id }} 置信度 ： {{ margin }} <br/>
     <input type= "button" value = "前一句" onclick = 'another_sentence(-1)' />
-    第{{ sentence_id }}句
+    第{{ sentence_id }}句 
     <input type= "button" value = "后一句" onclick = 'another_sentence(1)'/>
     <input type= "button" value = "apply" onclick = 'apply()'/>
     <input type= "button" value = "提交" onclick = 'submit()'/>
@@ -121,6 +121,26 @@
         if(code == 13){ submit(); return }
         if(code == 37){ another_sentence(-1); return }
         if(code == 39){ another_sentence(1); return }
+        if(code == 192){ //`
+            if (over_char_ind == -1 ) return;
+            if (predicted.length <= 0) return;
+
+            ind = over_char_ind ;
+            while(ind < predicted.length){
+                if(predicted[ind]=='?') break;
+                change_seg(ind,predicted[ind]);
+                if(predicted[ind]=='|') break; 
+                ind ++;
+            }
+            ind = over_char_ind - 1;
+            while(ind>=0){
+                if(predicted[ind]=='?') break;
+                change_seg(ind,predicted[ind]);
+                if(predicted[ind]=='|') break; 
+                ind --;
+            }
+            return;
+        }
         //alert(code)
     }
     function apply(){
@@ -131,6 +151,15 @@
         }
     }
 
+    over_char_ind = -1;
+    function char_over(ind){
+        over_char_ind = ind;
+    };
+    function char_out(){
+        over_char_ind = -1;
+    }
+
+
     html = []
     for(i in raw){
         if(margins.length > 0){
@@ -138,13 +167,12 @@
             conf = 255 - conf
             if(conf > 255) conf = 255
             if(conf < 0) conf = 0
-            html.push("<span onmousedown='start("+i+")' onmouseup='end("+i+")' style='color:rgb("+conf+",0,0);'>"+raw[i]+"</span>")
+            html.push("<span onmousedown='start("+i+")' onmouseover='char_over("+i+")' onmouseout='char_out()'  onmouseup='end("+i+")' style='color:rgb("+conf+",0,0);'>"+raw[i]+"</span>")
         }else{
             html.push("<span onmousedown='start("+i+")' onmouseup='end("+i+")' >"+raw[i]+"</span>")
         }
         if(i < anno.length){
-            //html.push("<span id = 'inter-"+i+"' class = '"+className[anno[i]]+"'>"+showHTML[anno[i]]+"</span>")
-            html.push("<span id = 'inter-"+i+"' class = '"+className[anno[i]]+"'>"+show_interval(anno[i],i)+"</span>")
+            html.push("<span id = 'inter-"+i+"' class = '"+className[anno[i]]+"' onmousedown='change_seg("+i+",\"?\")'>"+show_interval(anno[i],i)+"</span>")
         }
     }
 

@@ -2,6 +2,7 @@ from oneseg.sequence_labeling import Decoder, Feature_Generator
 from oneseg.online_learner import Learner
 from oneseg.online_model import Online
 import pickle
+from oneseg.utils import show_progress # 训练、解码比较慢，显式进度，增加耐心
 
 """ 
 # can not be pickled :(
