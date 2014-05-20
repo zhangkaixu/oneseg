@@ -21,7 +21,7 @@ def co_shuffle(*lists):
 
 def show_progress(l, n = None):
     def show_numbers(c, n):
-        if c % 100 == 0 : print("%d (%.1f%%)"%(c, c/n*100), end='\r', file = sys.stderr)
+        if c and c % 100 == 0 : print("%d (%.1f%%)"%(c, c/n*100), end='\r', file = sys.stderr)
 
     if type(l) == int :
         if n == None : n = l

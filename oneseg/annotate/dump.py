@@ -11,6 +11,7 @@ def to_seg(raw, anno):
         if a == '|' :
             sentence.append(''.join(cache))
             cache = []
+    cache.append(raw[-1])
     if cache : sentence.append(''.join(cache))
     return sentence
 
@@ -27,7 +28,9 @@ if __name__ == '__main__':
         anno = rec['anno']
         id = rec['id']
         sentence = to_seg(raw,anno)
-        print(*sentence)
+        if with_id :
+            print(id, *sentence)
+        else :
+            print(*sentence)
 
-        pass
 
