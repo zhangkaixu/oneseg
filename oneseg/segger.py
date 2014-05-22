@@ -6,12 +6,12 @@ def load_seg_file(filename):
     xs = []
     ys = []
     for line in open(filename):
+        line = line.decode('utf8') # special for python2
         y = line.split()
         ys.append(y)
         xs.append(''.join(y))
     return xs, ys
 
-'''输出高频bigram'''
 def count_bigrams(train_x, max_size = 10000):
     counter = Counter()
     min_freq = 1
@@ -58,4 +58,4 @@ class Base_Segger(Character_Labeler):
     def __init__(self, **args):
         codec = Codec()
         evaluator = SegTag_Evaluator(codec)
-        super().__init__(codec, evaluator, **args)
+        super(Base_Segger, self).__init__(codec, evaluator, **args)

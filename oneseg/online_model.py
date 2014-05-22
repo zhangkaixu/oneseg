@@ -1,6 +1,6 @@
-from oneseg.utils import show_progress # 训练、解码比较慢，显式进度，增加耐心
+from oneseg.utils import show_progress 
 
-class Online :
+class Online(object) :
     def __init__(self, decoder, weights = {}, learner = None, Eval = None):
         self.decoder = decoder
         self.learner = learner
@@ -20,7 +20,7 @@ class Online :
                 y = train_y[c]
                 z = self.decoder(x, self.weights)
 
-                if train_Y : # 训练时
+                if train_Y : 
                     Y = train_Y[c]
                     if subset(z, Y) :
                         y = z

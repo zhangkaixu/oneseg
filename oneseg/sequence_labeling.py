@@ -1,11 +1,10 @@
 import numpy as np
 class Decoder :
-    """ 类隐马尔科夫解码算法 """
     def __init__(self, feature_generator, tag_size = 4):
         self.feature_generator = feature_generator
         self.tag_size = tag_size
 
-    def put_value(self, sentence, weights): # 根据输入与参数， 得到'发射概率'与'转移概率'
+    def put_value(self, sentence, weights):
         values = [np.zeros(self.tag_size) for i in range(len(sentence))]
         features = self.feature_generator(sentence)
         for i in range(len(values)) :
@@ -19,9 +18,6 @@ class Decoder :
         return values, weights.get('trans', np.zeros((self.tag_size, self.tag_size))).copy()
 
     def forward(self, emissions, transitions) :
-        """
-        前向算法，改改输入就可以变为后向算法
-        """
         alphas = [emissions[0]]
         points = [emissions[0]]
         for i in range(len(emissions)-1) :
@@ -75,10 +71,9 @@ class Decoder :
             return margin
 
 class Feature_Generator :
-    '''根据模板生成特征'''
     def __init__(self, bigrams = None, bigram_vectors = None):
-        self.bigrams = bigrams # 可用bigrams来限定能够产生的bigram
-        self.bigram_vectors = bigram_vectors # 用于生成bigram vector特征
+        self.bigrams = bigrams 
+        self.bigram_vectors = bigram_vectors
     def __call__(self,sentence):
         ext = '##' + sentence + '##'
         bigrams = [ext[i:i+2] for i in range(len(ext)-1)]

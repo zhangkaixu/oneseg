@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # train the model
     segger.fit(train_x, train_y, 
             dev_x = test_x, dev_y = test_y,
-            iterations = 1)
+            iterations = 5)
 
     # save it and reload it
     gzip.open('model.gz','w').write(pickle.dumps(segger))

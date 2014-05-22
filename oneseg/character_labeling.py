@@ -2,7 +2,7 @@ from oneseg.sequence_labeling import Decoder, Feature_Generator
 from oneseg.online_learner import Learner
 from oneseg.online_model import Online
 import pickle
-from oneseg.utils import show_progress # 训练、解码比较慢，显式进度，增加耐心
+from oneseg.utils import show_progress
 
 """ 
 # can not be pickled :(
@@ -26,7 +26,7 @@ class Character_Labeler(Online) :
         feature_generator = Feature_Generator(bigrams = bigrams, bigram_vectors = bigram_vectors)
         decoder = Decoder(feature_generator)
         learner = Learner(feature_generator)
-        super().__init__(decoder, learner = learner, Eval = evaluator, weights = {})
+        super(Character_Labeler, self).__init__(decoder, learner = learner, Eval = evaluator, weights = {})
 
     def fit(self, xs, ys, 
             dev_x = None, dev_y = None, 
@@ -35,10 +35,10 @@ class Character_Labeler(Online) :
         self.decoder.tag_size = self.codec.get_size()
         self.learner.tag_size = self.codec.get_size()
         dev_y_seq = [self.codec.encode(y) for y in dev_y] if dev_y else None
-        super().fit(xs, y_seq, dev_x = dev_x, dev_y = dev_y_seq, **args)
+        super(Character_Labeler, self).fit(xs, y_seq, dev_x = dev_x, dev_y = dev_y_seq, **args)
 
     def predict(self, xs, **args):
-        yys = super().predict(xs, **args)
+        yys = super(Character_Labeler, self).predict(xs, **args)
         yys = [self.codec.decode(x, y) for x, y in zip(xs,yys)]
         return yys
 

@@ -2,11 +2,6 @@ import numpy as np
 
 
 def average_weights(weights_list, only_non_zeros = False):
-    """
-    将多个weights平均成一个，通常会有更好的效果
-    only_non_zeros : 只平均非零权重，一般来说有更好的效果
-    """
-    # 加和
     averaged = {}
     if only_non_zeros : N = {}
     for weights in weights_list :
@@ -16,7 +11,6 @@ def average_weights(weights_list, only_non_zeros = False):
             if only_non_zeros :
                 if k in N : N[k] += np.abs(np.sign(v))
                 else : N[k] = np.abs(np.sign(v))
-    # 相除
     n = len(weights_list)
     for k, v in averaged.items():
         if not only_non_zeros : 
@@ -77,8 +71,8 @@ class Learner :
     def __call__(self, sentence, y, z, weights):
         self.step += 1
         if y == z : return
-        grad = self.get_grad(sentence, y, z) # 求梯度
-        self.update(weights, grad) # 根据梯度更新权重
+        grad = self.get_grad(sentence, y, z) 
+        self.update(weights, grad) 
 
     def average(self, weights):
         averaged = {}
