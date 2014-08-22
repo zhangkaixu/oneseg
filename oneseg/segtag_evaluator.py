@@ -22,6 +22,8 @@ class SegTag_Evaluator :
         return word_set
         
     def __call__(self, y, z, use_decoder = True) :
+        if len(y)!=len(z) : 
+            return
         if use_decoder and self.codec is not None :
             x = '.' * len(y)
             y = self.codec.decode(x, y)

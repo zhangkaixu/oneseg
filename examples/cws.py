@@ -15,7 +15,7 @@ if __name__ == '__main__':
     dev_x, dev_y = load_seg_file(dev_file)
     test_x, test_y = load_seg_file(test_file)
 
-    train_x, train_y = dev_x, dev_y # for debug
+    #train_x, train_y = dev_x, dev_y # for debug
 
     # init the model
     bigrams = count_bigrams(train_x, max_size = 100000)
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # train the model
     segger.fit(train_x, train_y, 
             dev_x = test_x, dev_y = test_y,
-            iterations = 5)
+            iterations = 10)
 
     # save it and reload it
     gzip.open('model.gz','w').write(pickle.dumps(segger))

@@ -51,10 +51,14 @@ class Learner :
                     pass
 
         trans = np.zeros([self.tag_size, self.tag_size])
-        for i in range(len(y)-1):
-            trans[y[i]][y[i+1]] += 1
-            trans[z[i]][z[i+1]] -= 1
+        if len(y)==len(z) :
+            for i in range(len(y)-1):
+                trans[y[i]][y[i+1]] += 1
+                trans[z[i]][z[i+1]] -= 1
+        else :
+            print('y!=z')
         grad['trans'] = trans
+        #print(grad)
         return grad
 
     def update(self, weights, grad):

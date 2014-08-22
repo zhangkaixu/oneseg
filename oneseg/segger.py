@@ -1,3 +1,4 @@
+from __future__ import print_function
 from collections import Counter
 from oneseg.character_labeling import Character_Labeler
 from oneseg.segtag_evaluator import SegTag_Evaluator
@@ -6,7 +7,8 @@ def load_seg_file(filename):
     xs = []
     ys = []
     for line in open(filename):
-        line = line.decode('utf8') # special for python2
+        #print(line)
+        line = line.decode('utf8',"replace") # special for python2
         y = line.split()
         ys.append(y)
         xs.append(''.join(y))
