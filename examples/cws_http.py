@@ -1,10 +1,12 @@
+#coding=utf8
 #!/usr/bin/python3
 import cherrypy
 from jinja2 import Template
 import pickle
 import gzip
 import sys
-import urllib.parse
+#import urllib.parse
+#import urlparse
 
 class CWS (object) :
     def seg(self, s = None):

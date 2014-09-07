@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python2
 import cherrypy
 from jinja2 import Template
 import sys
@@ -42,7 +42,7 @@ class Annotator :
         margins = rec.get('margins',[])
         margins = json.dumps(margins)
         predicted = json.dumps(list(rec.get('predicted',[])))
-        index_file = open('oneseg/annotate/index.html').read()
+        index_file = open('oneseg/annotate/index.html').read().decode('utf8')
         index = Template(index_file).render({
             'id' : rec.get('id','unknown'),
             'sentence_id' : index,

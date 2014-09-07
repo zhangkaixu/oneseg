@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python2
+#coding=utf8
 from oneseg.segger import *
 
 import pickle
@@ -8,6 +9,7 @@ import numpy as np
 
 def gen_Ys(ys):
     """ 随机将唯一的标准答案污染成一个可行解集合 """
+    print(ys)
     ys = Base_Segger.encode(ys)
     for i in range(len(ys)) :
         y = ys[i]
@@ -29,9 +31,12 @@ def subset(y, Y):
 
 if __name__ == '__main__':
     # some refs
-    train_file = 'ctb5.training.seg'
-    dev_file = 'ctb5.dev.seg'
-    test_file = 'ctb5.test.seg'
+    #train_file = 'ctb5.training.seg'
+    #dev_file = 'ctb5.dev.seg'
+    #test_file = 'ctb5.test.seg'
+    train_file = 'tmp.json'
+    dev_file = 'tmp.json'
+    test_file = 'tmp.json'
 
     # load copora
     train_x, train_y = load_seg_file(train_file)
